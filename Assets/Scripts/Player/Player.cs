@@ -14,8 +14,6 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
-        Vector3 movementInput = new Vector3(PlayerInput.Instance.Horizontal, 0, PlayerInput.Instance.Vertical);
-        Vector3 movement = transform.rotation * movementInput;
-        _characterController.SimpleMove(movement);
+        
     }
 }
