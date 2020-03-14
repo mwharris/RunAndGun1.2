@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class PlayerMovementStateMachine : MonoBehaviour
 {
@@ -30,6 +27,18 @@ public class PlayerMovementStateMachine : MonoBehaviour
         _stateParams = _stateMachine.Tick(_stateParams);
         _velocity = _stateParams.Velocity;
 
-        _characterController.SimpleMove(_velocity);
+        /*
+         // TODO: not sure if we need this, leaving it here for now...
+        //Linear drag along the X and Z while grounded
+        if(_characterController.isGrounded)
+        {
+            _velocity.x *= 0.9f;
+            _velocity.z *= 0.9f;
+        }
+        */
+        
+        Debug.Log("Velocity: " + _velocity + ", Magnitude: " + _velocity.magnitude);
+
+        _characterController.Move(_velocity * Time.deltaTime);
     }
 }
