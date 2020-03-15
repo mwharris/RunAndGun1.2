@@ -14,30 +14,34 @@ public class Walking : IState
     
     public IStateParams Tick(IStateParams stateParams)
     {
-        Vector3 velocity;
+        var stateParamsVelocity = stateParams.Velocity;
 
         // Gather our vertical and horizontal input
         float forwardSpeed = PlayerInput.Instance.Vertical;
         float sideSpeed = PlayerInput.Instance.Horizontal;
 
         // Apply these values to our player
-        velocity = (_player.transform.forward * forwardSpeed) + (_player.transform.right * sideSpeed);
-        velocity *= _walkingSpeed;
+        var tempVelocity = (_player.transform.forward * forwardSpeed) + (_player.transform.right * sideSpeed);
+        tempVelocity *= _walkingSpeed;
         
         // Make sure we're never moving faster than our walking speed
-        velocity = Vector3.ClampMagnitude(velocity, _walkingSpeed);
+        tempVelocity = Vector3.ClampMagnitude(tempVelocity, _walkingSpeed);
         
-        stateParams.Velocity = velocity;
+        // Update our stateParams velocity
+        stateParamsVelocity.x = tempVelocity.x;
+        stateParamsVelocity.z = tempVelocity.z;
+        stateParams.Velocity = stateParamsVelocity;
+        
         return stateParams;
     }
 
     public void OnEnter()
     {
-        Debug.Log("Entering Walking...");
+        // Debug.Log("Entering Walking...");
     }
 
     public void OnExit()
     {
-        Debug.Log("Exiting Walking...");
+        // Debug.Log("Exiting Walking...");
     }
 }

@@ -8,7 +8,8 @@ public class PlayerInput : MonoBehaviour, IPlayerInput
     public float Horizontal => Input.GetAxis("Horizontal");
     public float MouseX => Input.GetAxis("Mouse X");
     public float MouseY => Input.GetAxis("Mouse Y");
-
+    public bool ShiftPressed => Input.GetKey(KeyCode.LeftShift); 
+    
     private void Awake()
     {
         Instance = this;
