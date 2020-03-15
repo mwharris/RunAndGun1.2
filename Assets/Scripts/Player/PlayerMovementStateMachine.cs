@@ -18,6 +18,8 @@ public class PlayerMovementStateMachine : MonoBehaviour
         _stateParams.Velocity = _velocity;
         
         Walking walking = new Walking(player);
+        Sprinting sprinting = new Sprinting(player);
+        
         _stateMachine.SetState(walking);
     }
 
