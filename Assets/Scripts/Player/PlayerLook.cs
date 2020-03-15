@@ -3,7 +3,9 @@
 public class PlayerLook : MonoBehaviour
 {
     [SerializeField] private Camera playerCamera;
-    [SerializeField] private float _mouseSensitvity = 100f;
+    public Camera PlayerCamera => playerCamera;
+
+    private float _mouseSensitvity = 100f;
     private float _cameraXRotation = 0f;
 
     private void Start()

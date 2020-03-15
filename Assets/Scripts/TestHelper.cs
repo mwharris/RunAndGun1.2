@@ -18,4 +18,28 @@ public static class TestHelper
     {
         return GameObject.FindObjectOfType<Player>();
     }
+
+    public static Camera GetPlayerCamera(Player player)
+    {
+        var playerLook = player.GetComponent<PlayerLook>();
+        return playerLook.PlayerCamera;
+    }
+
+    public static float CalculateHorizontalTurn(Quaternion originalRotation, Quaternion transformRotation)
+    {
+        Vector3 cross = CalculateTurn(originalRotation, transformRotation);
+        return cross.y;
+    }
+
+    public static float CalculateVerticalTurn(Quaternion originalRotation, Quaternion transformRotation)
+    {
+        Vector3 cross = CalculateTurn(originalRotation, transformRotation);
+        return cross.x;
+    }
+
+    private static Vector3 CalculateTurn(Quaternion originalRotation, Quaternion transformRotation)
+    {
+        Vector3 cross = Vector3.Cross(originalRotation * Vector3.forward, transformRotation * Vector3.forward);
+        return cross;
+    }
 }
