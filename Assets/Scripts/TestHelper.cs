@@ -25,6 +25,12 @@ public static class TestHelper
         return playerLook.PlayerCamera;
     }
 
+    public static PlayerMovementStateMachine GetPlayerMovementStateMachine(Player player)
+    {
+        var movementStateMachine = player.GetComponent<PlayerMovementStateMachine>();
+        return movementStateMachine;
+    }
+
     public static float CalculateHorizontalTurn(Quaternion originalRotation, Quaternion transformRotation)
     {
         Vector3 cross = CalculateTurn(originalRotation, transformRotation);

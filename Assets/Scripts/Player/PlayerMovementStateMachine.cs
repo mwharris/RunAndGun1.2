@@ -1,15 +1,18 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 public class PlayerMovementStateMachine : MonoBehaviour
 {
     private BaseStateMachine _stateMachine;
     private CharacterController _characterController;
-
     private IStateParams _stateParams;
     
     private Vector3 _velocity = Vector3.zero;
+    private Vector3 _horizontalVelocity = Vector3.zero;
     [SerializeField] private float gravity = -9.81f;
 
+    public Type CurrentStateType => _stateMachine.CurrentState.GetType();
+    
     private void Awake()
     {
         Player player = FindObjectOfType<Player>();
@@ -19,24 +22,49 @@ public class PlayerMovementStateMachine : MonoBehaviour
         _stateParams = new StateParams();
         _stateParams.Velocity = _velocity;
         
+        Idle idle = new Idle(player);
         Walking walking = new Walking(player);
         Sprinting sprinting = new Sprinting(player);
+
+        // Idle -> Walking transition
+        _stateMachine.AddStateTransition(new StateTransition(
+            idle,
+            walking,
+            () => !idle.CheckIdle()
+        ));
+        
+        // Walking -> Idle transition
+        _stateMachine.AddStateTransition(new StateTransition(
+            walking,
+            idle,
+            condition: () => idle.CheckIdle()
+        ));
         
         // Walking -> Sprinting transition
         _stateMachine.AddStateTransition(new StateTransition(
             walking,
             sprinting,
-            () => PlayerInput.Instance.ShiftPressed
+            () => PlayerInput.Instance.ShiftDown
         ));
         
         // Sprinting -> Walking transition
         _stateMachine.AddStateTransition(new StateTransition(
             sprinting,
             walking,
-            () => !PlayerInput.Instance.ShiftPressed
+            () => !sprinting.IsStillSprinting()
         ));
         
-        _stateMachine.SetState(walking);
+        /*
+        // Sprinting -> Idle transition
+        _stateMachine.AddStateTransition(new StateTransition(
+            sprinting,
+            idle,
+            () => idle.IsIdle()
+        ));
+        
+        */
+
+        _stateMachine.SetState(idle);
     }
 
     private void Update()
@@ -50,6 +78,10 @@ public class PlayerMovementStateMachine : MonoBehaviour
         _stateParams.Velocity = _velocity;
         _stateParams = _stateMachine.Tick(_stateParams);
         _velocity = _stateParams.Velocity;
+        
+        // Update our horizontal velocity variable
+        _horizontalVelocity.x = _velocity.x;
+        _horizontalVelocity.z = _velocity.z;
 
         // Handle our horizontal movement
         _characterController.Move(_velocity * Time.deltaTime);
@@ -59,6 +91,14 @@ public class PlayerMovementStateMachine : MonoBehaviour
         _characterController.Move(_velocity * Time.deltaTime);
 
         // PrintDebugVelocity();
+    }
+    
+    private bool NoMovement()
+    {
+        var noHorizontal = !PlayerInput.Instance.HorizontalHeld;
+        var noVertical = !PlayerInput.Instance.VerticalHeld;
+        var noVelocity = _horizontalVelocity.magnitude < 0.1f;
+        return noHorizontal && noVertical && noVelocity;
     }
 
     private void PrintDebugVelocity()

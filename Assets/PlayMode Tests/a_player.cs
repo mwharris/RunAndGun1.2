@@ -24,6 +24,7 @@ namespace a_player
             var player = TestHelper.GetPlayer();
 
             PlayerInput.Instance.Vertical.Returns(1f);
+            PlayerInput.Instance.VerticalHeld.Returns(true);
 
             float startZPos = player.transform.position.z;
             yield return new WaitForSeconds(0.5f);
@@ -42,6 +43,7 @@ namespace a_player
             var player = TestHelper.GetPlayer();
 
             PlayerInput.Instance.Vertical.Returns(-1f);
+            PlayerInput.Instance.VerticalHeld.Returns(true);
 
             float startZPos = player.transform.position.z;
             yield return new WaitForSeconds(0.5f);
@@ -60,6 +62,7 @@ namespace a_player
             var player = TestHelper.GetPlayer();
 
             PlayerInput.Instance.Horizontal.Returns(1f);
+            PlayerInput.Instance.HorizontalHeld.Returns(true);
 
             float startXPos = player.transform.position.x;
             yield return new WaitForSeconds(0.5f);
@@ -78,6 +81,7 @@ namespace a_player
             var player = TestHelper.GetPlayer();
 
             PlayerInput.Instance.Horizontal.Returns(-1f);
+            PlayerInput.Instance.HorizontalHeld.Returns(true);
 
             float startXPos = player.transform.position.x;
             yield return new WaitForSeconds(0.5f);

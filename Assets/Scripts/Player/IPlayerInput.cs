@@ -1,12 +1,15 @@
 ﻿public interface IPlayerInput
 {
     float Vertical { get; }
+    bool VerticalHeld { get; }
     float Horizontal { get; }
+    bool HorizontalHeld { get; }
     
     float MouseX { get; }
     float MouseY { get; }
     
-    bool ShiftPressed { get; }
+    bool ShiftDown { get; }
+    bool ShiftHeld { get; }
     
     void Tick();
 }

@@ -3,8 +3,6 @@
 public class Sprinting : IState
 {
     private readonly Player _player;
-    
-    // 5.1 m/s
     private float _sprintingSpeed = 5.1f;
     
     public Sprinting(Player player)
@@ -33,6 +31,22 @@ public class Sprinting : IState
         stateParams.Velocity = stateParamsVelocity;
             
         return stateParams;
+    }
+
+    // Decide when we are no longer sprinting
+    public bool IsStillSprinting()
+    {
+        // If we hit the shift button again, turn off sprint
+        if (PlayerInput.Instance.ShiftDown)
+        {
+            return false;
+        }
+        // If we stop moving forward, turn off sprint
+        if (PlayerInput.Instance.Vertical <= 0)
+        {
+            return false;
+        }
+        return true;
     }
 
     public void OnEnter()

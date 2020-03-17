@@ -22,7 +22,7 @@ public class BaseStateMachine
     {
         foreach (var transition in _stateTransitions)
         {
-            if (transition.Condition() && transition.To != _currentState)
+            if (_currentState == transition.From && transition.Condition())
             {
                 return transition;
             }
@@ -33,8 +33,8 @@ public class BaseStateMachine
     public void SetState(IState state)
     {
         _currentState?.OnExit();
+        Debug.Log($"Changed from {_currentState} to {state}");
         _currentState = state;
-        Debug.Log($"Changed to state {state}");
         _currentState?.OnEnter();
     }
     
