@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class BaseStateMachine
@@ -7,6 +8,7 @@ public class BaseStateMachine
     public IState CurrentState => _currentState;
 
     private List<StateTransition> _stateTransitions = new List<StateTransition>();
+    private List<StateTransition> _anyStateTransitions = new List<StateTransition>();
 
     public IStateParams Tick(IStateParams stateParams)
     {
@@ -20,6 +22,14 @@ public class BaseStateMachine
 
     private StateTransition CheckForTransition()
     {
+        // "Any" State Transitions have priority
+        foreach (var transition in _anyStateTransitions)
+        {
+            if (_currentState != transition.To && transition.Condition())
+            {
+                return transition;
+            }
+        }
         foreach (var transition in _stateTransitions)
         {
             if (_currentState == transition.From && transition.Condition())
@@ -38,8 +48,17 @@ public class BaseStateMachine
         _currentState?.OnEnter();
     }
     
-    public void AddStateTransition(StateTransition stateTransition)
+    public void AddTransition(IState from, IState to, Func<bool> condition)
     {
+        StateTransition stateTransition = new StateTransition(from, to, condition);
         _stateTransitions.Add(stateTransition);
     }
+    
+    public void AddAnyTransition(IState to, Func<bool> condition)
+    {
+        StateTransition stateTransition = new StateTransition(null, to, condition);
+        _anyStateTransitions.Add(stateTransition);
+    }
+
+    
 }

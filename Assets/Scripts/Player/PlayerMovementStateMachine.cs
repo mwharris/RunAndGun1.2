@@ -26,43 +26,14 @@ public class PlayerMovementStateMachine : MonoBehaviour
         Walking walking = new Walking(player);
         Sprinting sprinting = new Sprinting(player);
 
+        // Any -> Idle
+        _stateMachine.AddAnyTransition(idle, () => idle.CheckIdle());
         // Idle -> Walking transition
-        _stateMachine.AddStateTransition(new StateTransition(
-            idle,
-            walking,
-            () => !idle.CheckIdle()
-        ));
-        
-        // Walking -> Idle transition
-        _stateMachine.AddStateTransition(new StateTransition(
-            walking,
-            idle,
-            condition: () => idle.CheckIdle()
-        ));
-        
+        _stateMachine.AddTransition(idle, walking, () => !idle.CheckIdle());
         // Walking -> Sprinting transition
-        _stateMachine.AddStateTransition(new StateTransition(
-            walking,
-            sprinting,
-            () => PlayerInput.Instance.ShiftDown
-        ));
-        
+        _stateMachine.AddTransition(walking, sprinting, () => PlayerInput.Instance.ShiftDown);
         // Sprinting -> Walking transition
-        _stateMachine.AddStateTransition(new StateTransition(
-            sprinting,
-            walking,
-            () => !sprinting.IsStillSprinting()
-        ));
-        
-        /*
-        // Sprinting -> Idle transition
-        _stateMachine.AddStateTransition(new StateTransition(
-            sprinting,
-            idle,
-            () => idle.IsIdle()
-        ));
-        
-        */
+        _stateMachine.AddTransition(sprinting, walking, () => !sprinting.IsStillSprinting());
 
         _stateMachine.SetState(idle);
     }
