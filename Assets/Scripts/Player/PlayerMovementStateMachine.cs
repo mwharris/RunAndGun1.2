@@ -11,6 +11,8 @@ public class PlayerMovementStateMachine : MonoBehaviour
     private Vector3 _horizontalVelocity = Vector3.zero;
     [SerializeField] private float gravity = -9.81f;
 
+    private bool _fixInitialNotGrounded = true;
+
     public Type CurrentStateType => _stateMachine.CurrentState.GetType();
     
     private void Awake()
@@ -25,24 +27,35 @@ public class PlayerMovementStateMachine : MonoBehaviour
         Idle idle = new Idle(player);
         Walking walking = new Walking(player);
         Sprinting sprinting = new Sprinting(player);
+        Jumping jumping = new Jumping(player);
 
         // Any -> Idle
         _stateMachine.AddAnyTransition(idle, () => idle.CheckIdle());
-        // Idle -> Walking transition
+        // Any -> Idle
+        _stateMachine.AddAnyTransition(jumping, () => jumping.IsJumping() && !FixInitialNotGrounded());
+
+        // Idle -> Walking
         _stateMachine.AddTransition(idle, walking, () => !idle.CheckIdle());
-        // Walking -> Sprinting transition
+        // Walking -> Sprinting
         _stateMachine.AddTransition(walking, sprinting, () => PlayerInput.Instance.ShiftDown);
-        // Sprinting -> Walking transition
+        // Sprinting -> Walking
         _stateMachine.AddTransition(sprinting, walking, () => !sprinting.IsStillSprinting());
+        
+        /*
+        // Jumping -> Sprinting
+        _stateMachine.AddTransition(jumping, sprinting, () => !jumping.IsJumping() && sprinting.IsStillSprinting());
+        // Jumping -> Walking
+        _stateMachine.AddTransition(jumping, walking, () => !jumping.IsJumping() && !idle.CheckIdle() && !sprinting.IsStillSprinting());
+        */
 
         _stateMachine.SetState(idle);
     }
 
     private void Update()
     {
-        if (_characterController.isGrounded && _velocity.y < 0)
+        if (_characterController.isGrounded && _velocity.y < 0.1f)
         {
-            _velocity.y = -2f;
+            _velocity.y = -2.5f;
         }
         
         // Tick our current state to handle our movement
@@ -70,6 +83,16 @@ public class PlayerMovementStateMachine : MonoBehaviour
         var noVertical = !PlayerInput.Instance.VerticalHeld;
         var noVelocity = _horizontalVelocity.magnitude < 0.1f;
         return noHorizontal && noVertical && noVelocity;
+    }
+    
+    private bool FixInitialNotGrounded()
+    {
+        if (_fixInitialNotGrounded)
+        {
+            _fixInitialNotGrounded = false;
+            return true;
+        }
+        return false;
     }
 
     private void PrintDebugVelocity()
