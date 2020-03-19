@@ -10,6 +10,8 @@ public class BaseStateMachine
     private List<StateTransition> _stateTransitions = new List<StateTransition>();
     private List<StateTransition> _anyStateTransitions = new List<StateTransition>();
 
+    public event Action<IState, IState> OnStateChanged;
+    
     public IStateParams Tick(IStateParams stateParams)
     {
         StateTransition stateTransition = CheckForTransition();
@@ -42,10 +44,19 @@ public class BaseStateMachine
     
     public void SetState(IState state)
     {
+        if (_currentState == state)
+        {
+            return;
+        }
+        var fromState = _currentState;
+        var toState = state;
+        
         _currentState?.OnExit();
         Debug.Log($"Changed from {_currentState} to {state}");
         _currentState = state;
         _currentState?.OnEnter();
+        
+        OnStateChanged?.Invoke(fromState, toState);
     }
     
     public void AddTransition(IState from, IState to, Func<bool> condition)
