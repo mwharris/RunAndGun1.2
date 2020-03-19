@@ -30,23 +30,21 @@ public class PlayerMovementStateMachine : MonoBehaviour
         Jumping jumping = new Jumping(player);
 
         // Any -> Idle
-        _stateMachine.AddAnyTransition(idle, () => idle.CheckIdle());
+        _stateMachine.AddAnyTransition(idle, () => idle.IsIdle());
         // Any -> Idle
         _stateMachine.AddAnyTransition(jumping, () => jumping.IsJumping() && !FixInitialNotGrounded());
 
         // Idle -> Walking
-        _stateMachine.AddTransition(idle, walking, () => !idle.CheckIdle());
+        _stateMachine.AddTransition(idle, walking, () => walking.IsWalking());
         // Walking -> Sprinting
         _stateMachine.AddTransition(walking, sprinting, () => PlayerInput.Instance.ShiftDown);
         // Sprinting -> Walking
         _stateMachine.AddTransition(sprinting, walking, () => !sprinting.IsStillSprinting());
         
-        /*
         // Jumping -> Sprinting
         _stateMachine.AddTransition(jumping, sprinting, () => !jumping.IsJumping() && sprinting.IsStillSprinting());
         // Jumping -> Walking
-        _stateMachine.AddTransition(jumping, walking, () => !jumping.IsJumping() && !idle.CheckIdle() && !sprinting.IsStillSprinting());
-        */
+        _stateMachine.AddTransition(jumping, walking, () => walking.IsWalking());
 
         _stateMachine.SetState(idle);
     }

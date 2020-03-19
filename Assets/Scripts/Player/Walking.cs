@@ -3,6 +3,7 @@
 public class Walking : IState
 {
     private readonly Player _player;
+    private readonly CharacterController _characterController;
     
     // 3.4 m/s
     private float _walkingSpeed = 3.4f;
@@ -10,6 +11,7 @@ public class Walking : IState
     public Walking(Player player)
     {
         _player = player;
+        _characterController = player.GetComponent<CharacterController>();
     }
     
     public IStateParams Tick(IStateParams stateParams)
@@ -33,6 +35,12 @@ public class Walking : IState
         stateParams.Velocity = stateParamsVelocity;
         
         return stateParams;
+    }
+
+    public bool IsWalking()
+    {
+        var inputHeld = PlayerInput.Instance.HorizontalHeld || PlayerInput.Instance.VerticalHeld;
+        return _characterController.isGrounded && inputHeld;
     }
 
     public void OnEnter()

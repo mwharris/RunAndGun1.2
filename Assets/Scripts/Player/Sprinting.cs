@@ -3,11 +3,13 @@
 public class Sprinting : IState
 {
     private readonly Player _player;
+    private readonly CharacterController _characterController;
     private float _sprintingSpeed = 5.1f;
     
     public Sprinting(Player player)
     {
         _player = player;
+        _characterController = player.GetComponent<CharacterController>();
     }
 
     public IStateParams Tick(IStateParams stateParams)

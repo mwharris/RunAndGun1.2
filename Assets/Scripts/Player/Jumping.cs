@@ -21,23 +21,23 @@ public class Jumping : IState
     {
         var stateParamsVelocity = stateParams.Velocity;
         
-        /*
         // Jump when we first enter the jump state
         if (doJump)
         {
-            Jump(stateParams.Velocity);
+            stateParamsVelocity.y = jumpSpeed;
             doJump = false;
         }
+        /*
         // Jump if we have a double jump and we hit Jump button
         else if (doubleJumpAvailable && PlayerInput.Instance.SpaceDown)
         {
             Jump(stateParams.Velocity);
             doubleJumpAvailable = false;
         }
+        */
         
         // Update our stateParams velocity
         stateParams.Velocity = stateParamsVelocity;
-        */
 
         return stateParams;
     }
@@ -65,7 +65,10 @@ public class Jumping : IState
 
     public void OnEnter()
     {
-        doJump = true;
+        if (PlayerInput.Instance.SpaceDown)
+        {
+            doJump = true;
+        }
     }
 
     public void OnExit()
