@@ -17,6 +17,7 @@ public class PlayerInput : MonoBehaviour, IPlayerInput
     public bool ShiftHeld => Input.GetKey(KeyCode.LeftShift);
 
     public bool SpaceDown => Input.GetKeyDown(KeyCode.Space);
+    public bool SpaceHeld => Input.GetKey(KeyCode.Space);
     
     private void Awake()
     {

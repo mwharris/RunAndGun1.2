@@ -71,5 +71,4 @@ public class BaseStateMachine
         _anyStateTransitions.Add(stateTransition);
     }
 
-    
 }

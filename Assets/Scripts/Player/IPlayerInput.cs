@@ -12,6 +12,7 @@
     bool ShiftHeld { get; }
     
     bool SpaceDown { get; }
-    
+    bool SpaceHeld { get; }
+
     void Tick();
 }

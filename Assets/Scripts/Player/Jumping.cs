@@ -6,10 +6,11 @@ public class Jumping : IState
     private readonly Player _player;
     private readonly CharacterController _characterController;
 
-    private float jumpSpeed = 10f;
-
-    private bool doJump = false;
-    private bool doubleJumpAvailable = true;
+    private float jumpSpeed = 5f;
+    private bool _doJump = false;
+    private bool _doubleJumpAvailable = true;
+    private bool JumpDown => PlayerInput.Instance.SpaceDown;
+    private bool JumpHeld => PlayerInput.Instance.SpaceHeld;
     
     public Jumping(Player player)
     {
@@ -20,37 +21,37 @@ public class Jumping : IState
     public IStateParams Tick(IStateParams stateParams)
     {
         var stateParamsVelocity = stateParams.Velocity;
-        
+
         // Jump when we first enter the jump state
-        if (doJump)
+        if (_doJump)
         {
+            //Debug.Log("Enter Jump");
             stateParamsVelocity.y = jumpSpeed;
-            doJump = false;
+            _doJump = false;
         }
-        /*
-        // Jump if we have a double jump and we hit Jump button
-        else if (doubleJumpAvailable && PlayerInput.Instance.SpaceDown)
+        else if (_characterController.isGrounded && JumpHeld)
         {
-            Jump(stateParams.Velocity);
-            doubleJumpAvailable = false;
+            //Debug.Log("Bunny Hop");
+            stateParamsVelocity.y = jumpSpeed;
+            _doubleJumpAvailable = true;
         }
-        */
-        
+        // Jump if we have a double jump and we hit Jump button
+        else if (_doubleJumpAvailable && JumpDown)
+        {
+            //Debug.Log("Double Jump");
+            stateParamsVelocity.y = jumpSpeed;
+            _doubleJumpAvailable = false;
+        }
+
         // Update our stateParams velocity
         stateParams.Velocity = stateParamsVelocity;
-
         return stateParams;
-    }
-    
-    private void Jump(Vector3 velocity)
-    {
-        velocity.y = jumpSpeed;
     }
 
     public bool IsJumping()
     {
-        // If we just hit the Jump button
-        if (PlayerInput.Instance.SpaceDown)
+        // If we hit or are holding the Jump button
+        if (JumpDown || JumpHeld)
         {
             return true;
         }
@@ -67,11 +68,12 @@ public class Jumping : IState
     {
         if (PlayerInput.Instance.SpaceDown)
         {
-            doJump = true;
+            _doJump = true;
         }
     }
 
     public void OnExit()
     {
+        _doubleJumpAvailable = true;
     }
 }
