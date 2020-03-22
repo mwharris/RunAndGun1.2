@@ -11711,12 +11711,17 @@ PrefabInstance:
     - target: {fileID: 9121010066643601542, guid: 98e609605f806a14dbf9032bcf8b2428,
         type: 3}
       propertyPath: gravity
-      value: -15
+      value: -14
       objectReference: {fileID: 0}
     - target: {fileID: 9121010066643601542, guid: 98e609605f806a14dbf9032bcf8b2428,
         type: 3}
       propertyPath: downcastPoint
       value: 
       objectReference: {fileID: 776052305}
+    - target: {fileID: 9121010066643601542, guid: 98e609605f806a14dbf9032bcf8b2428,
+        type: 3}
+      propertyPath: defaultGravity
+      value: -14
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 98e609605f806a14dbf9032bcf8b2428, type: 3}

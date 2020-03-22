@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class Jumping : IState
 {
-    private readonly Player _player;
     private readonly CharacterController _characterController;
 
     private float jumpSpeed = 5f;
@@ -14,7 +13,6 @@ public class Jumping : IState
     
     public Jumping(Player player)
     {
-        _player = player;
         _characterController = player.GetComponent<CharacterController>();
     }
 
@@ -45,7 +43,21 @@ public class Jumping : IState
 
         // Update our stateParams velocity
         stateParams.Velocity = stateParamsVelocity;
+        
         return stateParams;
+    }
+
+    public void OnEnter()
+    {
+        if (PlayerInput.Instance.SpaceDown)
+        {
+            _doJump = true;
+        }
+    }
+
+    public void OnExit()
+    {
+        _doubleJumpAvailable = true;
     }
 
     public bool IsJumping()
@@ -61,19 +73,5 @@ public class Jumping : IState
             return true;
         }
         return false;
-    }
-
-
-    public void OnEnter()
-    {
-        if (PlayerInput.Instance.SpaceDown)
-        {
-            _doJump = true;
-        }
-    }
-
-    public void OnExit()
-    {
-        _doubleJumpAvailable = true;
     }
 }
