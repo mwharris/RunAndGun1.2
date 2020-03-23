@@ -43,14 +43,14 @@ public class Walking : IState
         return _characterController.isGrounded && inputHeld;
     }
 
-    public void OnEnter()
+    public IStateParams OnEnter(IStateParams stateParams)
     {
-        // Debug.Log("Entering Walking...");
+        return stateParams;
     }
 
-    public void OnExit()
+    public IStateParams OnExit(IStateParams stateParams)
     {
-        // Debug.Log("Exiting Walking...");
+        return stateParams;
     }
 
 }

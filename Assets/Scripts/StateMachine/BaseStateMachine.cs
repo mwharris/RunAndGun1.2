@@ -17,7 +17,7 @@ public class BaseStateMachine
         StateTransition stateTransition = CheckForTransition();
         if (stateTransition != null)
         {
-            SetState(stateTransition.To);
+            stateParams = SetState(stateTransition.To, stateParams);
         }
         return _currentState.Tick(stateParams);
     }
@@ -42,21 +42,23 @@ public class BaseStateMachine
         return null;
     }
     
-    public void SetState(IState state)
+    public IStateParams SetState(IState state, IStateParams stateParams)
     {
         if (_currentState == state)
         {
-            return;
+            return stateParams;
         }
         var fromState = _currentState;
         var toState = state;
         
-        _currentState?.OnExit();
+        stateParams = _currentState != null ? _currentState.OnExit(stateParams) : stateParams;
         Debug.Log($"Changed from {_currentState} to {state}");
         _currentState = state;
-        _currentState?.OnEnter();
+        stateParams = _currentState != null ? _currentState.OnEnter(stateParams) : stateParams;
         
         OnStateChanged?.Invoke(fromState, toState);
+        
+        return stateParams;
     }
     
     public void AddTransition(IState from, IState to, Func<bool> condition)

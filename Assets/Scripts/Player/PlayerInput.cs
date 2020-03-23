@@ -6,9 +6,11 @@ public class PlayerInput : MonoBehaviour, IPlayerInput
     
     public float Vertical => Input.GetAxis("Vertical");
     public bool VerticalHeld => Input.GetButton("Vertical");
-    
+    public float VerticalRaw => Input.GetAxisRaw("Vertical");
+
     public float Horizontal => Input.GetAxis("Horizontal");
     public bool HorizontalHeld => Input.GetButton("Horizontal");
+    public float HorizontalRaw => Input.GetAxisRaw("Horizontal");
     
     public float MouseX => Input.GetAxis("Mouse X");
     public float MouseY => Input.GetAxis("Mouse Y");

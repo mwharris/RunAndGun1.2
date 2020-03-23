@@ -2,8 +2,11 @@
 {
     float Vertical { get; }
     bool VerticalHeld { get; }
+    float VerticalRaw { get; }
+
     float Horizontal { get; }
     bool HorizontalHeld { get; }
+    float HorizontalRaw { get; }
     
     float MouseX { get; }
     float MouseY { get; }

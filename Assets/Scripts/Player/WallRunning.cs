@@ -27,11 +27,13 @@
         return stateParams;
     }
 
-    public void OnEnter()
+    public IStateParams OnEnter(IStateParams stateParams)
     {
+        return stateParams;
     }
 
-    public void OnExit()
+    public IStateParams OnExit(IStateParams stateParams)
     {
+        return stateParams;
     }
 }

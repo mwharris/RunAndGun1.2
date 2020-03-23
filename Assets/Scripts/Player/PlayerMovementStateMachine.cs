@@ -67,7 +67,7 @@ public class PlayerMovementStateMachine : MonoBehaviour
         _stateMachine.AddTransition(wallRunning, jumping, () => !_isWallRunning && !jumping.IsJumping() && walking.IsWalking());
 
         // Default to Idle
-        _stateMachine.SetState(idle);
+        _stateParams = _stateMachine.SetState(idle, _stateParams);
     }
 
     private void Update()

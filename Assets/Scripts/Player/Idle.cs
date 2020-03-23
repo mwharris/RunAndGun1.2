@@ -26,12 +26,14 @@ public class Idle : IState
         return noHorizontal && noVertical && _characterController.isGrounded;
     }
     
-    public void OnEnter()
+    public IStateParams OnEnter(IStateParams stateParams)
     {
+        return stateParams;
     }
 
-    public void OnExit()
+    public IStateParams OnExit(IStateParams stateParams)
     {
+        return stateParams;
     }
 
 }
