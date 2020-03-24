@@ -9,6 +9,10 @@ namespace state_machine
 {
     public class player_movement_state_machine
     {
+        // TODO: Double Jump
+        // TODO: Bunny Hop
+        // TODO: Wall Running
+        
         [SetUp]
         public void Setup()
         {
@@ -19,6 +23,7 @@ namespace state_machine
         {
             PlayerInput.Instance.Vertical.Returns(1f);
             PlayerInput.Instance.VerticalHeld.Returns(true);
+            PlayerInput.Instance.VerticalRaw.Returns(1f);
             yield return new WaitForSeconds(0.1f);
             Assert.AreEqual(typeof(Walking), stateMachine.CurrentStateType);
         }
@@ -77,6 +82,7 @@ namespace state_machine
 
             PlayerInput.Instance.Vertical.Returns(1f);
             PlayerInput.Instance.VerticalHeld.Returns(true);
+            PlayerInput.Instance.VerticalRaw.Returns(1f);
             yield return new WaitForSeconds(0.5f);
             
             Assert.AreEqual(typeof(Walking), stateMachine.CurrentStateType);
@@ -97,6 +103,7 @@ namespace state_machine
             // Test we move to Idle once buttons are released
             PlayerInput.Instance.Vertical.Returns(0f);
             PlayerInput.Instance.VerticalHeld.Returns(false);
+            PlayerInput.Instance.VerticalRaw.Returns(0f);
             yield return new WaitForSeconds(0.25f);
             Assert.AreEqual(typeof(Idle), stateMachine.CurrentStateType);
         }
@@ -229,6 +236,35 @@ namespace state_machine
 
             Assert.AreEqual(typeof(Sprinting), stateMachine.CurrentStateType);
             Assert.AreEqual(true, stateMachine.IsGrounded);
+        }
+
+        [UnityTest]
+        public IEnumerator air_influence_moves_us_horizontally()
+        {
+            yield return TestHelper.LoadMovementTestScene();
+            var player = TestHelper.GetPlayer();
+            var stateMachine = TestHelper.GetPlayerMovementStateMachine(player);
+            var startingX = player.transform.position.x;
+
+            Assert.AreEqual(typeof(Idle), stateMachine.CurrentStateType);
+            
+            // Idle -> Walking -> Sprinting -> Jumping
+            yield return MoveToWalking(stateMachine);
+            yield return MoveFromWalkingToSprinting(stateMachine);
+            yield return MoveToJumping(stateMachine);
+            yield return null;
+            
+            // Now move to the right while airborne
+            PlayerInput.Instance.Vertical.Returns(0f);
+            PlayerInput.Instance.VerticalHeld.Returns(false);
+            PlayerInput.Instance.VerticalRaw.Returns(0f);
+            PlayerInput.Instance.Horizontal.Returns(1f);
+            PlayerInput.Instance.HorizontalHeld.Returns(true);
+            PlayerInput.Instance.HorizontalRaw.Returns(1f);
+            yield return new WaitForSeconds(0.5f);
+            
+            // Assert we moved horizontally
+            Assert.Greater(player.transform.position.x, startingX);
         }
     }
 }
