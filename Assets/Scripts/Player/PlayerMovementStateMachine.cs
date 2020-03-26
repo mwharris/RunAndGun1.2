@@ -7,16 +7,13 @@ public class PlayerMovementStateMachine : MonoBehaviour
     private CharacterController _characterController;
     private IStateParams _stateParams;
     
-    [SerializeField] private Transform downcastPoint;
-    
-    private float defaultGravity = -14f;
-    
     private Vector3 _velocity = Vector3.zero;
     private Vector3 _horizontalVelocity = Vector3.zero;
-    
+    private float defaultGravity = -14f;
     private bool _preserveSprint = false;
-    private bool _isWallRunning = false;
     private bool _fixInitialNotGrounded = true;
+    
+    private bool _isWallRunning = false;
     
     public Type CurrentStateType => _stateMachine.CurrentState.GetType();
     public bool IsGrounded => _characterController.isGrounded;
@@ -40,7 +37,7 @@ public class PlayerMovementStateMachine : MonoBehaviour
         Walking walking = new Walking(player);
         Sprinting sprinting = new Sprinting(player);
         Jumping jumping = new Jumping(player);
-        WallRunning wallRunning = new WallRunning(defaultGravity);
+        WallRunning wallRunning = new WallRunning(player, defaultGravity);
 
         // Any -> Idle
         _stateMachine.AddAnyTransition(idle, () => idle.IsIdle() && !jumping.IsJumping());
@@ -77,8 +74,8 @@ public class PlayerMovementStateMachine : MonoBehaviour
             _velocity.y = -2.5f;
         }
         
-        // Wall-running raycasts
-        _isWallRunning = DoWallRunCheck(_velocity, _characterController.isGrounded);
+        // Wall-running raycast and hit info checks
+        DoWallRunCheck(_stateParams, _velocity, _characterController.isGrounded);
 
         // Tick our current state to handle our movement
         _stateParams.Velocity = _velocity;
@@ -95,7 +92,7 @@ public class PlayerMovementStateMachine : MonoBehaviour
         // Apply gravity (call move twice because t-squared)
         HandleGravity();
 
-        DebugWallRunRacyast();
+        //DebugWallRunRaycast();
     }
 
     private void HandleGravity()
@@ -128,19 +125,52 @@ public class PlayerMovementStateMachine : MonoBehaviour
         }
     }
 
-    private bool DoWallRunCheck(Vector3 velocity, bool isGrounded)
+    private void DoWallRunCheck(IStateParams stateParams, Vector3 velocity, bool isGrounded)
     {
+        float rayDistance = 1f;
+        
         if (!isGrounded)
         {
-            RaycastHit vHit;
-            Vector3 vDir = new Vector3(velocity.x, 0, velocity.z);
-            Physics.Raycast(transform.position, vDir, out vHit, 1);
-            if (vHit.collider != null)
+            var lastHitInfo = stateParams.WallRunHitInfo;
+            
+            // Check initialization of wall-running rules.
+            // Right now this just mean checking if our velocity vector touches any walls.
+            if (!_isWallRunning)
             {
-                return true;
+                RaycastHit velocityHitInfo;
+                Vector3 vDir = new Vector3(velocity.x, 0, velocity.z);
+                Physics.Raycast(transform.position, vDir, out velocityHitInfo, rayDistance);
+
+                Debug.DrawRay(transform.position, Vector3.ClampMagnitude(vDir, rayDistance), Color.yellow);
+                
+                if (velocityHitInfo.collider != null)
+                {
+                    _isWallRunning = true;
+                    stateParams.WallRunHitInfo = velocityHitInfo;
+                    return;
+                }
+            }
+            // Check continuous wall-running rules.
+            // Raycast along the last hit info's normal, in the reverse direction, to see if we're still on a wall.
+            else if (lastHitInfo.collider != null)
+            {
+                RaycastHit wallNormalHitInfo;
+                Vector3 rayDir = new Vector3(-lastHitInfo.normal.x, 0, -lastHitInfo.normal.z);
+                Physics.Raycast(transform.position, rayDir, out wallNormalHitInfo, rayDistance);
+                if (wallNormalHitInfo.collider != null)
+                {
+                    stateParams.WallRunHitInfo = wallNormalHitInfo;
+                    return;
+                }
             }
         }
-        return false;
+        // If we reached this point we shouldn't be wall-running
+        _isWallRunning = false;
+        // This is here to make sure we're not creating new RaycastHits every frame
+        if (stateParams.WallRunHitInfo.collider != null)
+        {
+            stateParams.WallRunHitInfo = new RaycastHit();
+        }
     }
 
     private bool FixInitialNotGrounded()
@@ -163,7 +193,7 @@ public class PlayerMovementStateMachine : MonoBehaviour
         );
     }
 
-    private void DebugWallRunRacyast()
+    private void DebugWallRunRaycast()
     {
         Vector3 vDir = new Vector3(_velocity.x, 0, _velocity.z);
         Debug.DrawRay(transform.position, vDir, Color.yellow);

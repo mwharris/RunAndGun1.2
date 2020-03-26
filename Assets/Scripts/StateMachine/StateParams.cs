@@ -6,4 +6,5 @@ public class StateParams : IStateParams
 {
     public Vector3 Velocity { get; set; } = Vector3.zero;
     public float GravityOverride { get; set; }
+    public RaycastHit WallRunHitInfo { get; set; }
 }

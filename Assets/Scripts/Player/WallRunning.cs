@@ -1,16 +1,29 @@
-﻿public class WallRunning : IState
+﻿using UnityEngine;
+
+public class WallRunning : IState
 {
+    private readonly Player _player;
     private readonly float _gravity;
 
-    public WallRunning(float defaultGravity)
+    public WallRunning(Player player, float defaultGravity)
     {
+        _player = player;
         _gravity = defaultGravity;
     }
 
     public IStateParams Tick(IStateParams stateParams)
     {
         var stateParamsVelocity = stateParams.Velocity;
+        var wallRunHitInfo = stateParams.WallRunHitInfo;
+        
+        var wallRunDirection = Vector3.ProjectOnPlane(stateParamsVelocity, wallRunHitInfo.normal);
+        Debug.DrawRay(_player.transform.position, wallRunDirection, Color.black);
+
+        stateParamsVelocity.x = wallRunDirection.x;
+        stateParamsVelocity.z = wallRunDirection.z; 
+
         stateParams.Velocity = stateParamsVelocity;
+        
         return SetGravity(stateParams);
     }
 
