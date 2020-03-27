@@ -92,7 +92,7 @@ public class PlayerMovementStateMachine : MonoBehaviour
         // Apply gravity (call move twice because t-squared)
         HandleGravity();
 
-        //DebugWallRunRaycast();
+        //DebugPrintVelocity();
     }
 
     private void HandleGravity()
@@ -186,10 +186,11 @@ public class PlayerMovementStateMachine : MonoBehaviour
     private void DebugPrintVelocity()
     {
         Vector3 horizontalVelocity = new Vector3(_velocity.x, 0f, _velocity.z);
+        
         Debug.Log(
             "Velocity: " + _velocity 
                          + ", Horiz. Magnitude: " + horizontalVelocity.magnitude
-                         + ", Magnitude: " + _velocity.magnitude
+                         /*+ ", Magnitude: " + _velocity.magnitude*/
         );
     }
 
