@@ -140,9 +140,7 @@ public class PlayerMovementStateMachine : MonoBehaviour
                 RaycastHit velocityHitInfo;
                 Vector3 vDir = new Vector3(velocity.x, 0, velocity.z);
                 Physics.Raycast(transform.position, vDir, out velocityHitInfo, rayDistance);
-
                 Debug.DrawRay(transform.position, Vector3.ClampMagnitude(vDir, rayDistance), Color.yellow);
-                
                 if (velocityHitInfo.collider != null)
                 {
                     _isWallRunning = true;

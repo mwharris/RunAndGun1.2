@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Diagnostics;
+using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 public class WallRunning : IState
 {
@@ -7,6 +10,10 @@ public class WallRunning : IState
     
     private readonly float _wallRunSpeed = 6.8f;
     private readonly float _wallRunSlowSpeed = 1f;
+    
+    private Vector3 _wallRunMoveAxis = Vector3.zero;
+    private bool _wallRunningRight = false;
+    private bool _wallRunningLeft = false;
 
     public WallRunning(Player player, float defaultGravity)
     {
@@ -18,47 +25,52 @@ public class WallRunning : IState
     {
         var stateParamsVelocity = stateParams.Velocity;
         var wallRunHitInfo = stateParams.WallRunHitInfo;
-        var horizontalVelocity = new Vector3(stateParamsVelocity.x, 0, stateParamsVelocity.z);
 
         var forwardSpeed = PlayerInput.Instance.Vertical;
-        var sideSpeed = PlayerInput.Instance.Horizontal;
-        var forwardHeld = PlayerInput.Instance.VerticalRaw;
-        var sideHeld = PlayerInput.Instance.HorizontalRaw;
 
         // Find the direction parallel to the wall using the wallRunHitInfo.normal
-        var wallRunMoveAxis = Vector3.Cross(Vector3.up, wallRunHitInfo.normal);
-
-        // Use the player velocity to determine which way they should be headed along this axis
-        float dot = Vector3.Dot(wallRunMoveAxis, horizontalVelocity);
-        float magnitudeMult = wallRunMoveAxis.magnitude * horizontalVelocity.magnitude;
-        float angle = Mathf.Acos(dot / magnitudeMult) * Mathf.Rad2Deg;
-        if (angle > 90)
+        SetWallRunSide();
+        
+        // Wall running right
+        if (_wallRunningRight)
         {
-            wallRunMoveAxis = -wallRunMoveAxis;
+            _wallRunMoveAxis = Vector3.Cross(Vector3.up, wallRunHitInfo.normal);
         }
-        
-        Debug.Log("Angle : " + angle);
-        Debug.DrawRay(wallRunHitInfo.point, wallRunMoveAxis * 10, Color.green);
-        
-        // TODO: maybe just pick one if there's no distinction
-        
-        
-        /*
-        // Project our velocity parallel to the wall we're running along
-        var wallRunDirection = Vector3.ProjectOnPlane(horizontalVelocity, wallRunHitInfo.normal);
-        Debug.DrawRay(_player.transform.position, wallRunDirection, Color.black);
+        // Wall running left
+        else
+        {
+            _wallRunMoveAxis = Vector3.Cross(wallRunHitInfo.normal, Vector3.up);
+        }
+        Debug.DrawRay(wallRunHitInfo.point, _wallRunMoveAxis * 10, Color.green);
 
-        wallRunDirection = wallRunDirection * forwardSpeed;
-        wallRunDirection *= _wallRunSpeed;
-        wallRunDirection = Vector3.ClampMagnitude(wallRunDirection, _wallRunSpeed);
+        // Apply our movement along the wall run axis we found above
+        var moveAxis = _wallRunMoveAxis;
+        moveAxis = (moveAxis * forwardSpeed);
+        moveAxis *= _wallRunSpeed;
+        moveAxis = Vector3.ClampMagnitude(moveAxis, _wallRunSpeed);
 
-        stateParamsVelocity.x = wallRunDirection.x;
-        stateParamsVelocity.z = wallRunDirection.z;
-        */
-   
+        // Update our stateParams velocity
+        stateParamsVelocity.x = moveAxis.x;
+        stateParamsVelocity.z = moveAxis.z;
         stateParams.Velocity = stateParamsVelocity;
-        
+
         return SetGravity(stateParams);
+    }
+
+    private void SetWallRunSide()
+    {
+        float rayDistance = 1f;
+        RaycastHit rightHitInfo;
+        RaycastHit leftHitInfo;
+        
+        Vector3 rightDir = _player.transform.right;
+        Vector3 leftDir = -_player.transform.right;
+        
+        Physics.Raycast(_player.transform.position, rightDir, out rightHitInfo, rayDistance);
+        Physics.Raycast(_player.transform.position, leftDir, out leftHitInfo, rayDistance);
+
+        _wallRunningRight = rightHitInfo.collider != null;
+        _wallRunningLeft = leftHitInfo.collider != null;
     }
 
     private IStateParams SetGravity(IStateParams stateParams)
