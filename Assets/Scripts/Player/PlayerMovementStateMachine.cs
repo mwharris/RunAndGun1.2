@@ -69,7 +69,7 @@ public class PlayerMovementStateMachine : MonoBehaviour
 
     private bool Jump(Jumping jumping)
     {
-        bool wallJumped = !_isWallRunning || PlayerInput.Instance.SpaceDown;
+        bool wallJumped = !_isWallRunning || _stateParams.WallJumped;
         return jumping.IsJumping() && !FixInitialNotGrounded() && wallJumped;
     }
 
@@ -129,6 +129,10 @@ public class PlayerMovementStateMachine : MonoBehaviour
         {
             _preserveSprint = false;
         }
+        else if (from is WallRunning)
+        {
+            _isWallRunning = false;
+        }
     }
 
     private void DoWallRunCheck(IStateParams stateParams, Vector3 velocity, bool isGrounded)
@@ -138,7 +142,6 @@ public class PlayerMovementStateMachine : MonoBehaviour
         if (!isGrounded)
         {
             var lastHitInfo = stateParams.WallRunHitInfo;
-            
             // Check initialization of wall-running rules.
             // Right now this just mean checking if our velocity vector touches any walls.
             if (!_isWallRunning)

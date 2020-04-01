@@ -6,7 +6,8 @@ public class Jumping : IState
     private readonly Player _player;
     private readonly CharacterController _characterController;
     
-    private float jumpSpeed = 5f;
+    private float _jumpSpeed = 5f;
+    private float _wallJumpHorizontalSpeed = 8.5f;
     private bool _doJump = false;
     private bool _doubleJumpAvailable = true;
     
@@ -28,8 +29,17 @@ public class Jumping : IState
         float sideSpeed = PlayerInput.Instance.HorizontalRaw;
         var inputVelocity = (_player.transform.forward * forwardSpeed) + (_player.transform.right * sideSpeed);
 
-        stateParamsVelocity = HandleJumping(stateParamsVelocity, inputVelocity);
-        stateParamsVelocity = HandleMovement(stateParamsVelocity, inputVelocity);
+        if (stateParams.WallJumped)
+        {
+            _doJump = false;
+            stateParams.WallJumped = false;
+            stateParamsVelocity = HandleWallJumping(stateParamsVelocity, forwardSpeed, sideSpeed);
+        }
+        else
+        {
+            stateParamsVelocity = HandleJumping(stateParamsVelocity, inputVelocity);
+            stateParamsVelocity = HandleMovement(stateParamsVelocity, inputVelocity);
+        }
 
         stateParams.Velocity = stateParamsVelocity;
         return stateParams;
@@ -60,13 +70,13 @@ public class Jumping : IState
         // Jump when we first enter the jump state
         if (_doJump)
         {
-            velocity.y = jumpSpeed;
+            velocity.y = _jumpSpeed;
             _doJump = false;
         }
         // Jump when we hit the ground if we're holding the jump button
         else if (_characterController.isGrounded && JumpHeld)
         {
-            velocity.y = jumpSpeed;
+            velocity.y = _jumpSpeed;
             _doubleJumpAvailable = true;
         }
         // Jump if we have a double jump and we hit Jump button
@@ -75,6 +85,15 @@ public class Jumping : IState
             velocity = DoubleJump(velocity, inputVelocity);
         }
         return velocity; 
+    }
+    
+    private Vector3 HandleWallJumping(Vector3 velocity, float forwardSpeed, float sideSpeed)
+    {
+        Vector3 targetDir = new Vector3(sideSpeed, 0f, forwardSpeed);
+        velocity = _player.transform.rotation * targetDir;
+        velocity = velocity.normalized * _wallJumpHorizontalSpeed;
+        velocity.y = _jumpSpeed;
+        return velocity;
     }
 
     private Vector3 DoubleJump(Vector3 velocity, Vector3 inputVelocity)
@@ -88,14 +107,14 @@ public class Jumping : IState
             // Rotate the current direction to match our input direction
             velocity = Vector3.RotateTowards(velocity, inputVelocity, radians, 0.0f);
         }
-        velocity.y = jumpSpeed;
+        velocity.y = _jumpSpeed;
         _doubleJumpAvailable = false;
         return velocity;
     }
 
     public IStateParams OnEnter(IStateParams stateParams)
     {
-        if (PlayerInput.Instance.SpaceDown)
+        if (PlayerInput.Instance.SpaceDown || stateParams.WallJumped)
         {
             _doJump = true;
         }

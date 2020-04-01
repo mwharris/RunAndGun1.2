@@ -27,34 +27,37 @@ public class WallRunning : IState
         var wallRunHitInfo = stateParams.WallRunHitInfo;
 
         var forwardSpeed = PlayerInput.Instance.Vertical;
-        bool jumped = PlayerInput.Instance.SpaceDown;
+        bool wallJumped = PlayerInput.Instance.SpaceDown;
 
-        // Find the direction parallel to the wall using the wallRunHitInfo.normal
-        SetWallRunSide();
-        
-        // Wall running right
-        if (_wallRunningRight)
+        if (wallJumped)
         {
-            _wallRunMoveAxis = Vector3.Cross(Vector3.up, wallRunHitInfo.normal);
+            stateParams.WallJumped = true;
         }
-        // Wall running left
         else
         {
-            _wallRunMoveAxis = Vector3.Cross(wallRunHitInfo.normal, Vector3.up);
+            // Find the direction parallel to the wall using the wallRunHitInfo.normal
+            SetWallRunSide();
+            // Wall running right
+            if (_wallRunningRight)
+            {
+                _wallRunMoveAxis = Vector3.Cross(Vector3.up, wallRunHitInfo.normal);
+            }
+            // Wall running left
+            else
+            {
+                _wallRunMoveAxis = Vector3.Cross(wallRunHitInfo.normal, Vector3.up);
+            }
+            // Apply our movement along the wall run axis we found above
+            var moveAxis = _wallRunMoveAxis;
+            moveAxis = (moveAxis * forwardSpeed);
+            moveAxis *= _wallRunSpeed;
+            moveAxis = Vector3.ClampMagnitude(moveAxis, _wallRunSpeed);
+            // Update our stateParams velocity
+            stateParamsVelocity.x = moveAxis.x;
+            stateParamsVelocity.z = moveAxis.z;
+            stateParams.Velocity = stateParamsVelocity;   
         }
-        // Debug.DrawRay(wallRunHitInfo.point, _wallRunMoveAxis * 10, Color.green);
-
-        // Apply our movement along the wall run axis we found above
-        var moveAxis = _wallRunMoveAxis;
-        moveAxis = (moveAxis * forwardSpeed);
-        moveAxis *= _wallRunSpeed;
-        moveAxis = Vector3.ClampMagnitude(moveAxis, _wallRunSpeed);
-
-        // Update our stateParams velocity
-        stateParamsVelocity.x = moveAxis.x;
-        stateParamsVelocity.z = moveAxis.z;
-        stateParams.Velocity = stateParamsVelocity;
-
+        
         return SetGravity(stateParams);
     }
 
