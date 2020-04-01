@@ -27,6 +27,7 @@ public class WallRunning : IState
         var wallRunHitInfo = stateParams.WallRunHitInfo;
 
         var forwardSpeed = PlayerInput.Instance.Vertical;
+        bool jumped = PlayerInput.Instance.SpaceDown;
 
         // Find the direction parallel to the wall using the wallRunHitInfo.normal
         SetWallRunSide();
@@ -41,7 +42,7 @@ public class WallRunning : IState
         {
             _wallRunMoveAxis = Vector3.Cross(wallRunHitInfo.normal, Vector3.up);
         }
-        Debug.DrawRay(wallRunHitInfo.point, _wallRunMoveAxis * 10, Color.green);
+        // Debug.DrawRay(wallRunHitInfo.point, _wallRunMoveAxis * 10, Color.green);
 
         // Apply our movement along the wall run axis we found above
         var moveAxis = _wallRunMoveAxis;

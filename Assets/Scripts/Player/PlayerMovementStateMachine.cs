@@ -42,7 +42,7 @@ public class PlayerMovementStateMachine : MonoBehaviour
         // Any -> Idle
         _stateMachine.AddAnyTransition(idle, () => idle.IsIdle() && !jumping.IsJumping());
         // Any -> Jumping
-        _stateMachine.AddAnyTransition(jumping, () => jumping.IsJumping() && !_isWallRunning && !FixInitialNotGrounded());
+        _stateMachine.AddAnyTransition(jumping, () => Jump(jumping));
 
         // Idle -> Walking
         _stateMachine.AddTransition(idle, walking, () => walking.IsWalking());
@@ -65,6 +65,12 @@ public class PlayerMovementStateMachine : MonoBehaviour
 
         // Default to Idle
         _stateParams = _stateMachine.SetState(idle, _stateParams);
+    }
+
+    private bool Jump(Jumping jumping)
+    {
+        bool wallJumped = !_isWallRunning || PlayerInput.Instance.SpaceDown;
+        return jumping.IsJumping() && !FixInitialNotGrounded() && wallJumped;
     }
 
     private void Update()
