@@ -38,6 +38,8 @@ public class PlayerMovementStateMachine : MonoBehaviour
         Sprinting sprinting = new Sprinting(player);
         Jumping jumping = new Jumping(player);
         WallRunning wallRunning = new WallRunning(player, defaultGravity);
+        Crouching crouching = new Crouching(player);
+        Sliding sliding = new Sliding(player);
 
         // Any -> Idle
         _stateMachine.AddAnyTransition(idle, () => idle.IsIdle() && !jumping.IsJumping());
@@ -50,6 +52,11 @@ public class PlayerMovementStateMachine : MonoBehaviour
         _stateMachine.AddTransition(walking, sprinting, () => PlayerInput.Instance.ShiftDown);
         // Sprinting -> Walking
         _stateMachine.AddTransition(sprinting, walking, () => !sprinting.IsStillSprinting());
+        
+        // Idle -> Crouching
+        // Walking -> Crouching
+        
+        // Sprinting -> Sliding (Crouching)
         
         // Jumping -> Sprinting
         _stateMachine.AddTransition(jumping, sprinting, () => !jumping.IsJumping() && _preserveSprint);
@@ -120,12 +127,11 @@ public class PlayerMovementStateMachine : MonoBehaviour
     
     private void HandleStateChanged(IState from, IState to)
     {
-        // Preserve Sprinting through our Jump
         if (from is Sprinting && to is Jumping)
         {
             _preserveSprint = true;
         }
-        else if (_preserveSprint && from is Jumping && !(to is Sprinting))
+        else if (_preserveSprint && from is Jumping && !(to is Sprinting) && !(to is WallRunning))
         {
             _preserveSprint = false;
         }
