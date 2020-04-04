@@ -18,6 +18,8 @@ public class PlayerMovementStateMachine : MonoBehaviour
     public Type CurrentStateType => _stateMachine.CurrentState.GetType();
     public bool IsGrounded => _characterController.isGrounded;
 
+    [SerializeField] private bool playerIsGrounded;
+
     private void Awake()
     {
         Player player = FindObjectOfType<Player>();
@@ -42,7 +44,7 @@ public class PlayerMovementStateMachine : MonoBehaviour
         Sliding sliding = new Sliding(player);
 
         // Any -> Idle
-        _stateMachine.AddAnyTransition(idle, () => idle.IsIdle() && !jumping.IsJumping());
+        _stateMachine.AddAnyTransition(idle, () => idle.IsIdle() && !jumping.IsJumping() && (!crouching.IsCrouching && !crouching.Rising));
         // Any -> Jumping
         _stateMachine.AddAnyTransition(jumping, () => Jump(jumping));
 
@@ -54,8 +56,9 @@ public class PlayerMovementStateMachine : MonoBehaviour
         _stateMachine.AddTransition(sprinting, walking, () => !sprinting.IsStillSprinting());
         
         // Idle -> Crouching
-        // Walking -> Crouching
+        _stateMachine.AddTransition(idle, crouching, () => PlayerInput.Instance.CrouchDown);
         
+        // Walking -> Crouching
         // Sprinting -> Sliding (Crouching)
         
         // Jumping -> Sprinting
@@ -86,6 +89,8 @@ public class PlayerMovementStateMachine : MonoBehaviour
         {
             _velocity.y = -2.5f;
         }
+
+        playerIsGrounded = _characterController.isGrounded;
         
         // Wall-running raycast and hit info checks
         DoWallRunCheck(_stateParams, _velocity, _characterController.isGrounded);

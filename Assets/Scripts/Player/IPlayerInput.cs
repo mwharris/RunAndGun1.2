@@ -16,6 +16,9 @@
     
     bool SpaceDown { get; }
     bool SpaceHeld { get; }
+    
+    bool CrouchDown { get; }
+    bool CrouchHeld { get; }
 
     void Tick();
 }

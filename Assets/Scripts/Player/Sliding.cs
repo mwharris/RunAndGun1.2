@@ -2,23 +2,25 @@
 
 public class Sliding : IState
 {
+    private readonly Player _player;
+    
     public Sliding(Player player)
     {
-        throw new NotImplementedException();
+        _player = player;
     }
 
     public IStateParams Tick(IStateParams stateParams)
     {
-        throw new NotImplementedException();
+        return stateParams;
     }
 
     public IStateParams OnEnter(IStateParams stateParams)
     {
-        throw new NotImplementedException();
+        return stateParams;
     }
 
     public IStateParams OnExit(IStateParams stateParams)
     {
-        throw new NotImplementedException();
+        return stateParams;
     }
 }

@@ -20,6 +20,9 @@ public class PlayerInput : MonoBehaviour, IPlayerInput
 
     public bool SpaceDown => Input.GetKeyDown(KeyCode.Space);
     public bool SpaceHeld => Input.GetKey(KeyCode.Space);
+
+    public bool CrouchDown => Input.GetKeyDown(KeyCode.LeftControl);
+    public bool CrouchHeld => Input.GetKey(KeyCode.LeftControl);
     
     private void Awake()
     {

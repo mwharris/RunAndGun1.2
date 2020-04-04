@@ -291,6 +291,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 531f6bbf324571246a1e416175b2fb63, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _playerBody: {fileID: 6791431711557156720}
 --- !u!114 &9121010066643601542
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -303,7 +304,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2f3d9fb43dff57499c3e9faf4a6929a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gravity: -9.81
 --- !u!114 &190962384
 MonoBehaviour:
   m_ObjectHideFlags: 0
