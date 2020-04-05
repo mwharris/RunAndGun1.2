@@ -6,12 +6,12 @@ public class PlayerMovementStateMachine : MonoBehaviour
     private BaseStateMachine _stateMachine;
     private CharacterController _characterController;
     private IStateParams _stateParams;
+    private PlayerMovementStateMachineHelper _stateHelper;
     
     private Vector3 _velocity = Vector3.zero;
     private Vector3 _horizontalVelocity = Vector3.zero;
     private float defaultGravity = -14f;
     private bool _preserveSprint = false;
-    private bool _fixInitialNotGrounded = true;
     
     private bool _isWallRunning = false;
     
@@ -24,6 +24,7 @@ public class PlayerMovementStateMachine : MonoBehaviour
     {
         Player player = FindObjectOfType<Player>();
         _characterController = GetComponent<CharacterController>();
+        _stateHelper = new PlayerMovementStateMachineHelper();
         _stateMachine = new BaseStateMachine();
         
         // Hook into the BaseStateMachine OnStateChanged event
@@ -44,9 +45,9 @@ public class PlayerMovementStateMachine : MonoBehaviour
         Sliding sliding = new Sliding(player);
 
         // Any -> Idle
-        _stateMachine.AddAnyTransition(idle, () => idle.IsIdle() && !jumping.IsJumping() && (!crouching.IsCrouching && !crouching.Rising));
+        _stateMachine.AddAnyTransition(idle, () => _stateHelper.ToIdle(idle, jumping, crouching));
         // Any -> Jumping
-        _stateMachine.AddAnyTransition(jumping, () => Jump(jumping));
+        _stateMachine.AddAnyTransition(jumping, () => _stateHelper.ToJump(jumping, _isWallRunning, _stateParams.WallJumped));
 
         // Idle -> Walking
         _stateMachine.AddTransition(idle, walking, () => walking.IsWalking());
@@ -57,30 +58,27 @@ public class PlayerMovementStateMachine : MonoBehaviour
         
         // Idle -> Crouching
         _stateMachine.AddTransition(idle, crouching, () => PlayerInput.Instance.CrouchDown);
-        
         // Walking -> Crouching
+        _stateMachine.AddTransition(walking, crouching, () => PlayerInput.Instance.CrouchDown);
+        // Crouching -> Walking
+        _stateMachine.AddTransition(crouching, walking, () => PlayerInput.Instance.CrouchDown);
         // Sprinting -> Sliding (Crouching)
+        _stateMachine.AddTransition(sprinting, crouching, () => PlayerInput.Instance.CrouchDown);
         
         // Jumping -> Sprinting
-        _stateMachine.AddTransition(jumping, sprinting, () => !jumping.IsJumping() && _preserveSprint);
+        _stateMachine.AddTransition(jumping, sprinting, () => _stateHelper.JumpToSprint(jumping, _preserveSprint));
         // Jumping -> Walking
-        _stateMachine.AddTransition(jumping, walking, () => !jumping.IsJumping() && walking.IsWalking());
+        _stateMachine.AddTransition(jumping, walking, () => _stateHelper.JumpToWalk(jumping, walking));
         
         // Jumping -> Wall Running
         _stateMachine.AddTransition(jumping, wallRunning, () => _isWallRunning);
         // Wall Running -> Sprinting
-        _stateMachine.AddTransition(wallRunning, jumping, () => !_isWallRunning && !jumping.IsJumping() && _preserveSprint);
+        _stateMachine.AddTransition(wallRunning, jumping, () => _stateHelper.WallRunToSprint(jumping, _isWallRunning, _preserveSprint));
         // Wall Running -> Walking
-        _stateMachine.AddTransition(wallRunning, jumping, () => !_isWallRunning && !jumping.IsJumping() && walking.IsWalking());
+        _stateMachine.AddTransition(wallRunning, jumping, () => _stateHelper.WallRunToWalk(jumping, walking, _isWallRunning));
 
         // Default to Idle
         _stateParams = _stateMachine.SetState(idle, _stateParams);
-    }
-
-    private bool Jump(Jumping jumping)
-    {
-        bool wallJumped = !_isWallRunning || _stateParams.WallJumped;
-        return jumping.IsJumping() && !FixInitialNotGrounded() && wallJumped;
     }
 
     private void Update()
@@ -191,16 +189,6 @@ public class PlayerMovementStateMachine : MonoBehaviour
         }
     }
 
-    private bool FixInitialNotGrounded()
-    {
-        if (_fixInitialNotGrounded)
-        {
-            _fixInitialNotGrounded = false;
-            return true;
-        } 
-        return false;
-    }
-    
     private void DebugPrintVelocity()
     {
         Vector3 horizontalVelocity = new Vector3(_velocity.x, 0f, _velocity.z);

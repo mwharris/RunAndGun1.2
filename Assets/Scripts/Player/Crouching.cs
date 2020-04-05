@@ -12,6 +12,9 @@ public class Crouching : IState
     private Transform _playerBody;
     private Transform _playerCamera;
     
+    // 1.7 m/s
+    private float _crouchingWalkSpeed = 1.7f;
+    
     private float originalCharacterHeight;
     private float originalCameraHeight;
 
@@ -34,7 +37,13 @@ public class Crouching : IState
 
     public IStateParams Tick(IStateParams stateParams)
     {
-        // Toggling between crouching and standing
+        ToggleCrouch();
+        return HandleMovement(stateParams);
+    }
+
+    private void ToggleCrouch()
+    {
+        // Handle setting flags for standing or crouching
         if (!_firstframe && PlayerInput.Instance.CrouchDown)
         {
             _lowering = !_lowering;
@@ -44,8 +53,7 @@ public class Crouching : IState
         {
             _firstframe = false;
         }
-        
-        // Perform the actual crouch / stand
+        // Perform the correct function based on our flags
         if (_lowering)
         {
             Crouch();
@@ -54,12 +62,31 @@ public class Crouching : IState
         {
             Stand();   
         }
-        
-        // TODO: Handle movement
+    }
+    
+    private IStateParams HandleMovement(IStateParams stateParams)
+    {
+        var stateParamsVelocity = stateParams.Velocity;
 
+        // Gather our vertical and horizontal input
+        float forwardSpeed = PlayerInput.Instance.Vertical;
+        float sideSpeed = PlayerInput.Instance.Horizontal;
+
+        // Apply these values to our player
+        var tempVelocity = (_player.transform.forward * forwardSpeed) + (_player.transform.right * sideSpeed);
+        tempVelocity *= _crouchingWalkSpeed;
+        
+        // Make sure we're never moving faster than our walking speed
+        tempVelocity = Vector3.ClampMagnitude(tempVelocity, _crouchingWalkSpeed);
+        
+        // Update our stateParams velocity
+        stateParamsVelocity.x = tempVelocity.x;
+        stateParamsVelocity.z = tempVelocity.z;
+        stateParams.Velocity = stateParamsVelocity;
+        
         return stateParams;
     }
-
+    
     private void Crouch()
     {
         IsCrouching = true;
