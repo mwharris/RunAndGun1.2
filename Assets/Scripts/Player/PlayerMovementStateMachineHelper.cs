@@ -54,4 +54,14 @@ public class PlayerMovementStateMachineHelper
                && !jumping.IsJumping() 
                && walking.IsWalking();
     }
+
+    public bool CrouchToWalk(Crouching crouching, Walking walking)
+    {
+        return walking.IsWalking() && !crouching.IsCrouching && !crouching.Rising;
+    }
+
+    public bool CrouchToSprint(Crouching crouching, Sprinting sprinting)
+    {
+        return false;
+    }
 }

@@ -21,7 +21,10 @@ public class Crouching : IState
     private bool _firstframe = false;
     private bool _lowering = false;
     private bool _rising = false;
+    private bool _toSprint = false;
+    
     public bool Rising => _rising;
+    public bool ToSprint => _toSprint;
 
     public Crouching(Player player)
     {
@@ -37,13 +40,14 @@ public class Crouching : IState
 
     public IStateParams Tick(IStateParams stateParams)
     {
-        ToggleCrouch();
+        HandleInput();
+        CrouchOrStand();
         return HandleMovement(stateParams);
     }
 
-    private void ToggleCrouch()
+    private void HandleInput()
     {
-        // Handle setting flags for standing or crouching
+        // Toggle between crouching and rising when crouch is pressed
         if (!_firstframe && PlayerInput.Instance.CrouchDown)
         {
             _lowering = !_lowering;
@@ -53,7 +57,15 @@ public class Crouching : IState
         {
             _firstframe = false;
         }
-        // Perform the correct function based on our flags
+        // Sprint directly out of Crouch
+        if (PlayerInput.Instance.ShiftDown)
+        {
+            _toSprint = true;
+        }
+    }
+
+    private void CrouchOrStand()
+    {
         if (_lowering)
         {
             Crouch();
@@ -123,14 +135,27 @@ public class Crouching : IState
         var cameraPosition = _playerCamera.transform.localPosition;
 
         playerBodyScale.y = Raise(playerBodyScale.y, targetBodyScale, Time.deltaTime * 16f);
-        ccHeight = Raise(ccHeight, targetCcHeight, Time.deltaTime * 8f);
+        ccHeight = Raise(ccHeight, targetCcHeight, Time.deltaTime * 16f);
         ccCenter = Vector3.down * (originalCharacterHeight - ccHeight) / 2.0f;
-        cameraPosition.y = Raise(cameraPosition.y, targetCameraHeight, Time.deltaTime * 8f);
+        cameraPosition.y = Raise(cameraPosition.y, targetCameraHeight, Time.deltaTime * 16f);
         
         _playerBody.localScale = playerBodyScale;
         _characterController.height = ccHeight;
         _characterController.center = ccCenter;
         _playerCamera.transform.localPosition = cameraPosition;
+
+        _rising = !FinishedStanding(targetBodyScale, targetCcHeight, targetCameraHeight);
+    }
+
+    private bool FinishedStanding(float targetBodyScale, float targetCcHeight, float targetCameraHeight)
+    {
+        if (_playerBody.localScale.y == targetBodyScale
+            && _characterController.height == targetCcHeight
+            && _playerCamera.transform.localPosition.y == targetCameraHeight)
+        {
+            return true;
+        }
+        return false;
     }
     
     private float Lower(float value, float target, float deltaTime)
@@ -148,7 +173,7 @@ public class Crouching : IState
 
     private float Raise(float value, float target, float deltaTime)
     {
-        if (value < target && Mathf.Abs(value - target) > 0.01f)
+        if (value < target && Mathf.Abs(value - target) > 0.05f)
         {
             return Mathf.Lerp(value, target, deltaTime);
         }
