@@ -63,9 +63,9 @@ public class PlayerMovementStateMachine : MonoBehaviour
         // Crouching -> Walking
         _stateMachine.AddTransition(crouching, walking, () => _stateHelper.CrouchToWalk(crouching, walking));
         // Crouching -> Sprinting
-        _stateMachine.AddTransition(crouching, walking, () => _stateHelper.CrouchToSprint(crouching, sprinting));
+        _stateMachine.AddTransition(crouching, sprinting, () => _stateHelper.CrouchToSprint(crouching));
         // Sprinting -> Sliding (Crouching)
-        _stateMachine.AddTransition(sprinting, crouching, () => PlayerInput.Instance.CrouchDown);
+        //_stateMachine.AddTransition(sprinting, crouching, () => PlayerInput.Instance.CrouchDown);
         
         // Jumping -> Sprinting
         _stateMachine.AddTransition(jumping, sprinting, () => _stateHelper.JumpToSprint(jumping, _preserveSprint));
