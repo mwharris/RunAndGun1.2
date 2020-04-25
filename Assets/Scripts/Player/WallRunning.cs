@@ -6,6 +6,7 @@ using Debug = UnityEngine.Debug;
 public class WallRunning : IState
 {
     private readonly Player _player;
+    private readonly Transform _playerCamera;
     private readonly float _gravity;
     
     private readonly float _wallRunSpeed = 6.8f;
@@ -18,6 +19,7 @@ public class WallRunning : IState
     public WallRunning(Player player, float defaultGravity)
     {
         _player = player;
+        _playerCamera = player.PlayerCamera.transform;
         _gravity = defaultGravity;
     }
 
@@ -37,6 +39,8 @@ public class WallRunning : IState
         {
             // Find the direction parallel to the wall using the wallRunHitInfo.normal
             SetWallRunSide();
+            // Tilt the camera in the opposite direction of the wall-run
+            TiltCamera();
             // Wall running right
             if (_wallRunningRight)
             {
@@ -59,6 +63,24 @@ public class WallRunning : IState
         }
         
         return SetGravity(stateParams);
+    }
+
+    private void TiltCamera()
+    {
+        var localRot = _playerCamera.transform.localRotation;
+        if (_wallRunningRight)
+        {
+            localRot.z = Mathf.Lerp(localRot.z, 0.1f, Time.deltaTime * 4f);
+        }
+        else if (_wallRunningLeft) 
+        {
+            localRot.z = Mathf.Lerp(localRot.z, 0.1f, Time.deltaTime * 4f);
+        }
+        else
+        {
+            localRot.z = Mathf.Lerp(localRot.z, 0f, Time.deltaTime * 4f);
+        }
+        _playerCamera.transform.localRotation = localRot;
     }
 
     private void SetWallRunSide()
