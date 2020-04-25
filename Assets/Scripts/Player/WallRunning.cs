@@ -11,6 +11,7 @@ public class WallRunning : IState
     
     private readonly float _wallRunSpeed = 6.8f;
     private readonly float _wallRunSlowSpeed = 1f;
+    private readonly float _wallRunCameraTilt = 0.08f;
     
     private Vector3 _wallRunMoveAxis = Vector3.zero;
     private bool _wallRunningRight = false;
@@ -40,7 +41,7 @@ public class WallRunning : IState
             // Find the direction parallel to the wall using the wallRunHitInfo.normal
             SetWallRunSide();
             // Tilt the camera in the opposite direction of the wall-run
-            TiltCamera();
+            TiltCamera(stateParams);
             // Wall running right
             if (_wallRunningRight)
             {
@@ -65,22 +66,18 @@ public class WallRunning : IState
         return SetGravity(stateParams);
     }
 
-    private void TiltCamera()
+    private void TiltCamera(IStateParams stateParams)
     {
-        var localRot = _playerCamera.transform.localRotation;
+        var lerpSpeed = Time.deltaTime * 4f;
+        // This value will be retrieved by the PlayerLook script via PlayerLookVars
         if (_wallRunningRight)
         {
-            localRot.z = Mathf.Lerp(localRot.z, 0.1f, Time.deltaTime * 4f);
+            stateParams.WallRunZRotation = Mathf.Lerp(_playerCamera.localRotation.z, _wallRunCameraTilt, lerpSpeed);
         }
         else if (_wallRunningLeft) 
         {
-            localRot.z = Mathf.Lerp(localRot.z, 0.1f, Time.deltaTime * 4f);
+            stateParams.WallRunZRotation = Mathf.Lerp(_playerCamera.localRotation.z, -_wallRunCameraTilt, lerpSpeed);
         }
-        else
-        {
-            localRot.z = Mathf.Lerp(localRot.z, 0f, Time.deltaTime * 4f);
-        }
-        _playerCamera.transform.localRotation = localRot;
     }
 
     private void SetWallRunSide()
@@ -114,6 +111,12 @@ public class WallRunning : IState
 
     public IStateParams OnEnter(IStateParams stateParams)
     {
+        var stateParamsVelocity = stateParams.Velocity;
+        if (stateParamsVelocity.y < 0)
+        {
+            stateParamsVelocity.y = 0;
+            stateParams.Velocity = stateParamsVelocity;
+        }
         return stateParams;
     }
 

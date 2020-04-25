@@ -7,6 +7,7 @@ public class PlayerMovementStateMachine : MonoBehaviour
     private CharacterController _characterController;
     private IStateParams _stateParams;
     private PlayerMovementStateMachineHelper _stateHelper;
+    private PlayerLookVars _playerLookVars;
     
     private Vector3 _velocity = Vector3.zero;
     private Vector3 _horizontalVelocity = Vector3.zero;
@@ -26,7 +27,8 @@ public class PlayerMovementStateMachine : MonoBehaviour
         _characterController = GetComponent<CharacterController>();
         _stateHelper = new PlayerMovementStateMachineHelper();
         _stateMachine = new BaseStateMachine();
-        
+        _playerLookVars = new PlayerLookVars();
+
         // Hook into the BaseStateMachine OnStateChanged event
         _stateMachine.OnStateChanged += HandleStateChanged;
         
@@ -158,13 +160,17 @@ public class PlayerMovementStateMachine : MonoBehaviour
             if (!_isWallRunning)
             {
                 RaycastHit velocityHitInfo;
+                RaycastHit inputHitInfo;
                 Vector3 vDir = new Vector3(velocity.x, 0, velocity.z);
+                Vector3 iDir = CreateInputVector();
                 Physics.Raycast(transform.position, vDir, out velocityHitInfo, rayDistance);
+                Physics.Raycast(transform.position, iDir, out inputHitInfo, rayDistance);
                 Debug.DrawRay(transform.position, Vector3.ClampMagnitude(vDir, rayDistance), Color.yellow);
-                if (velocityHitInfo.collider != null)
+                Debug.DrawRay(transform.position, Vector3.ClampMagnitude(iDir, rayDistance), Color.black);
+                if (velocityHitInfo.collider != null || inputHitInfo.collider != null)
                 {
                     _isWallRunning = true;
-                    stateParams.WallRunHitInfo = velocityHitInfo;
+                    stateParams.WallRunHitInfo = velocityHitInfo.collider != null ? velocityHitInfo : inputHitInfo;
                     return;
                 }
             }
@@ -191,6 +197,20 @@ public class PlayerMovementStateMachine : MonoBehaviour
         }
     }
 
+    private Vector3 CreateInputVector()
+    {
+        float forwardSpeed = PlayerInput.Instance.Vertical;
+        float sideSpeed = PlayerInput.Instance.Horizontal;
+        return ((transform.forward * forwardSpeed) + (transform.right * sideSpeed));
+    }
+
+    public PlayerLookVars GetPlayerLookVars()
+    {
+        _playerLookVars.PlayerIsWallRunning = CurrentStateType == typeof(WallRunning);
+        _playerLookVars.WallRunZRotation = _stateParams.WallRunZRotation;
+        return _playerLookVars;
+    }
+
     private void DebugPrintVelocity()
     {
         Vector3 horizontalVelocity = new Vector3(_velocity.x, 0f, _velocity.z);
@@ -207,4 +227,5 @@ public class PlayerMovementStateMachine : MonoBehaviour
         Vector3 vDir = new Vector3(_velocity.x, 0, _velocity.z);
         Debug.DrawRay(transform.position, vDir, Color.yellow);
     }
+
 }
