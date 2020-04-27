@@ -7,18 +7,17 @@ public class Crouching : IState
     public bool IsCrouching { get; private set; } = false;
     
     private readonly Player _player;
-    private CharacterController _characterController;
-    private PlayerMovementStateMachine _movementStateMachine;
-    private Transform _playerBody;
-    private Transform _playerCamera;
+    private readonly CharacterController _characterController;
+    private readonly Transform _playerBody;
+    private readonly Transform _playerCamera;
     
     // 1.7 m/s
     private float _crouchingWalkSpeed = 1.7f;
     
-    private float originalCharacterHeight;
-    private float originalCameraHeight;
+    private readonly float _originalCharacterHeight;
+    private readonly float _originalCameraHeight;
 
-    private bool _firstframe = false;
+    private bool _firstFrame = false;
     private bool _lowering = false;
     private bool _rising = false;
     private bool _toSprint = false;
@@ -31,11 +30,10 @@ public class Crouching : IState
         _player = player;
         _playerBody = player.PlayerBody;
         _playerCamera = player.PlayerCamera.transform;
-        _movementStateMachine = player.GetComponent<PlayerMovementStateMachine>();
         _characterController = player.GetComponent<CharacterController>();
         
-        originalCharacterHeight = _characterController.height;
-        originalCameraHeight = _playerCamera.transform.localPosition.y;
+        _originalCharacterHeight = _characterController.height;
+        _originalCameraHeight = _playerCamera.transform.localPosition.y;
     }
 
     public IStateParams Tick(IStateParams stateParams)
@@ -48,14 +46,14 @@ public class Crouching : IState
     private void HandleInput()
     {
         // Toggle between crouching and rising when crouch is pressed
-        if (!_firstframe && PlayerInput.Instance.CrouchDown)
+        if (!_firstFrame && PlayerInput.Instance.CrouchDown)
         {
             _lowering = !_lowering;
             _rising = !_rising;
         }
         else
         {
-            _firstframe = false;
+            _firstFrame = false;
         }
         // Sprint directly out of Crouch
         if (PlayerInput.Instance.ShiftDown)
@@ -105,8 +103,8 @@ public class Crouching : IState
     {
         IsCrouching = true;
         var targetBodyScale = 0.5f;
-        var targetCcHeight = originalCharacterHeight / 2;
-        var targetCameraHeight = originalCameraHeight / 2;
+        var targetCcHeight = _originalCharacterHeight / 2;
+        var targetCameraHeight = _originalCameraHeight / 2;
         
         var playerBodyScale = _playerBody.localScale;
         var ccHeight = _characterController.height;
@@ -129,8 +127,8 @@ public class Crouching : IState
         IsCrouching = false;
         float riseSpeed = Time.deltaTime * (_toSprint ? 20f : 16f);
         var targetBodyScale = 1f;
-        var targetCcHeight = originalCharacterHeight;
-        var targetCameraHeight = originalCameraHeight;
+        var targetCcHeight = _originalCharacterHeight;
+        var targetCameraHeight = _originalCameraHeight;
         
         var playerBodyScale = _playerBody.localScale;
         var ccHeight = _characterController.height;
@@ -139,7 +137,7 @@ public class Crouching : IState
 
         playerBodyScale.y = Raise(playerBodyScale.y, targetBodyScale, riseSpeed);
         ccHeight = Raise(ccHeight, targetCcHeight, riseSpeed);
-        ccCenter = Vector3.down * (originalCharacterHeight - ccHeight) / 2.0f;
+        ccCenter = Vector3.down * (_originalCharacterHeight - ccHeight) / 2.0f;
         cameraPosition.y = Raise(cameraPosition.y, targetCameraHeight, riseSpeed);
         
         _playerBody.localScale = playerBodyScale;
@@ -190,7 +188,7 @@ public class Crouching : IState
     public IStateParams OnEnter(IStateParams stateParams)
     {
         _lowering = true;
-        _firstframe = true;
+        _firstFrame = true;
         return stateParams;
     }
 

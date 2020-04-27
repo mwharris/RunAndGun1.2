@@ -5,15 +5,18 @@ public class Jumping : IState
 {
     private readonly Player _player;
     private readonly CharacterController _characterController;
-    
-    private float _jumpSpeed = 5f;
-    private float _wallJumpHorizontalSpeed = 8.5f;
+
     private bool _doJump = false;
     private bool _doubleJumpAvailable = true;
     
+    private const float JumpSpeed = 5f;
+    private const float WallJumpHorizontalSpeed = 8.5f;
+    
     private bool JumpDown => PlayerInput.Instance.SpaceDown;
     private bool JumpHeld => PlayerInput.Instance.SpaceHeld;
-    
+
+    public bool ToSlide { get; private set; } = false;
+
     public Jumping(Player player)
     {
         _player = player;
@@ -28,7 +31,14 @@ public class Jumping : IState
         float forwardSpeed = PlayerInput.Instance.VerticalRaw;
         float sideSpeed = PlayerInput.Instance.HorizontalRaw;
         var inputVelocity = (_player.transform.forward * forwardSpeed) + (_player.transform.right * sideSpeed);
+        
+        // If we hit Crouch while Jumping, we want to land in a slide
+        if (PlayerInput.Instance.CrouchDown)
+        {
+            ToSlide = true;
+        }
 
+        // Handle aerial movement and wall jumping
         if (stateParams.WallJumped)
         {
             _doJump = false;
@@ -70,13 +80,13 @@ public class Jumping : IState
         // Jump when we first enter the jump state
         if (_doJump)
         {
-            velocity.y = _jumpSpeed;
+            velocity.y = JumpSpeed;
             _doJump = false;
         }
         // Jump when we hit the ground if we're holding the jump button
         else if (_characterController.isGrounded && JumpHeld)
         {
-            velocity.y = _jumpSpeed;
+            velocity.y = JumpSpeed;
             _doubleJumpAvailable = true;
         }
         // Jump if we have a double jump and we hit Jump button
@@ -91,8 +101,8 @@ public class Jumping : IState
     {
         Vector3 targetDir = new Vector3(sideSpeed, 0f, forwardSpeed);
         velocity = _player.transform.rotation * targetDir;
-        velocity = velocity.normalized * _wallJumpHorizontalSpeed;
-        velocity.y = _jumpSpeed;
+        velocity = velocity.normalized * WallJumpHorizontalSpeed;
+        velocity.y = JumpSpeed;
         return velocity;
     }
 
@@ -107,7 +117,7 @@ public class Jumping : IState
             // Rotate the current direction to match our input direction
             velocity = Vector3.RotateTowards(velocity, inputVelocity, radians, 0.0f);
         }
-        velocity.y = _jumpSpeed;
+        velocity.y = JumpSpeed;
         _doubleJumpAvailable = false;
         return velocity;
     }
@@ -124,6 +134,7 @@ public class Jumping : IState
     public IStateParams OnExit(IStateParams stateParams)
     {
         _doubleJumpAvailable = true;
+        ToSlide = false;
         return stateParams;
     }
 

@@ -46,8 +46,9 @@ public class PlayerMovementStateMachine : MonoBehaviour
         Crouching crouching = new Crouching(player);
         Sliding sliding = new Sliding(player);
 
+        // Create our state transitions
         // Any -> Idle
-        _stateMachine.AddAnyTransition(idle, () => _stateHelper.ToIdle(idle, jumping, crouching));
+        _stateMachine.AddAnyTransition(idle, () => _stateHelper.ToIdle(idle, jumping, crouching, sliding));
         // Any -> Jumping
         _stateMachine.AddAnyTransition(jumping, () => _stateHelper.ToJump(jumping, _isWallRunning, _stateParams.WallJumped));
 
@@ -67,20 +68,22 @@ public class PlayerMovementStateMachine : MonoBehaviour
         // Crouching -> Sprinting
         _stateMachine.AddTransition(crouching, sprinting, () => _stateHelper.CrouchToSprint(crouching));
         // Sprinting -> Sliding (Crouching)
-        //_stateMachine.AddTransition(sprinting, crouching, () => PlayerInput.Instance.CrouchDown);
+        _stateMachine.AddTransition(sprinting, sliding, () => PlayerInput.Instance.CrouchDown);
         
+        // Jumping -> Sliding
+        _stateMachine.AddTransition(jumping, sliding, () => _stateHelper.JumpToSlide(jumping));
         // Jumping -> Sprinting
         _stateMachine.AddTransition(jumping, sprinting, () => _stateHelper.JumpToSprint(jumping, _preserveSprint));
         // Jumping -> Walking
-        _stateMachine.AddTransition(jumping, walking, () => _stateHelper.JumpToWalk(jumping, walking));
-        
+        _stateMachine.AddTransition(jumping, walking, () => _stateHelper.JumpToWalk(jumping, walking, _preserveSprint));
         // Jumping -> Wall Running
         _stateMachine.AddTransition(jumping, wallRunning, () => _isWallRunning);
+        
         // Wall Running -> Sprinting
         _stateMachine.AddTransition(wallRunning, jumping, () => _stateHelper.WallRunToSprint(jumping, _isWallRunning, _preserveSprint));
         // Wall Running -> Walking
         _stateMachine.AddTransition(wallRunning, jumping, () => _stateHelper.WallRunToWalk(jumping, walking, _isWallRunning));
-
+        
         // Default to Idle
         _stateParams = _stateMachine.SetState(idle, _stateParams);
     }
@@ -138,7 +141,7 @@ public class PlayerMovementStateMachine : MonoBehaviour
         {
             _preserveSprint = true;
         }
-        else if (_preserveSprint && from is Jumping && !(to is Sprinting) && !(to is WallRunning))
+        else if (_preserveSprint && from is Jumping && !(to is WallRunning))
         {
             _preserveSprint = false;
         }
