@@ -37,8 +37,8 @@ public class Sliding : IState
             Crouch();
         }
         // Apply drag to our velocity
-        velocity.x *= 1-DragAmount;
-        velocity.z *= 1-DragAmount;
+        velocity.x *= 1 - Time.deltaTime;
+        velocity.z *= 1 - Time.deltaTime;
         // Transition to Crouched state when velocity is under a threshold
         var horizontalVelocity = new Vector3(velocity.x, 0, velocity.z);
         if (horizontalVelocity.magnitude < CrouchThreshold)
