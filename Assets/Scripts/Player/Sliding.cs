@@ -14,7 +14,7 @@ public class Sliding : IState
 
     private bool _lowering = false;
 
-    private const float DragAmount = 10f;
+    private const float DragAmount = 0.01f;
     private const float CrouchThreshold = 1f;
 
     public Sliding(Player player)
@@ -37,9 +37,8 @@ public class Sliding : IState
             Crouch();
         }
         // Apply drag to our velocity
-        var dragOverTime = DragAmount * Time.deltaTime;
-        velocity.x *= dragOverTime;
-        velocity.z *= dragOverTime;
+        velocity.x *= 1-DragAmount;
+        velocity.z *= 1-DragAmount;
         // Transition to Crouched state when velocity is under a threshold
         var horizontalVelocity = new Vector3(velocity.x, 0, velocity.z);
         if (horizontalVelocity.magnitude < CrouchThreshold)
